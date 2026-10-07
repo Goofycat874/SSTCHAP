@@ -103,7 +103,11 @@ a { color: inherit; }
 .mode { padding-inline: var(--xs); }
 .learn { display: block; }
 .learn-main { max-width: 1120px; margin: 0 auto; padding-inline: var(--xs); }
-.foot { border-top: 1px solid var(--line); max-width: 1280px; margin: 0 auto; padding: var(--md) var(--xs) var(--lg); }
+.foot { border-top: 1px solid var(--line); max-width: 1120px; margin: 0 auto; padding: var(--lg) var(--xs) var(--xl); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: var(--sm); }
+.foot-credit { display: flex; align-items: center; gap: var(--xs); }
+.foot-credit .cap-up { display: block; }
+.foot-name { font: 500 22px/1.3 var(--f); letter-spacing: -0.2px; color: var(--fg); }
+.foot-note { max-width: 52ch; }
 
 /* ---------- hero: cinematic band ---------- */
 .hero { position: relative; overflow: hidden; display: flex; align-items: flex-end; min-height: clamp(520px, 74vh, 760px); background: radial-gradient(120% 90% at 78% 100%, #3c3c3c 0%, #181818 55%, #101010 100%); border-bottom: 1px solid var(--line); }

@@ -2,7 +2,7 @@ import { build } from "esbuild";
 import fs from "fs";
 
 const r = await build({
-  entryPoints: ["src/App.jsx"], bundle: true, minify: true, format: "iife", write: false,
+  entryPoints: ["src/App.jsx"], bundle: true, loader: { ".mp3": "dataurl" }, minify: true, format: "iife", write: false,
   jsx: "automatic", define: { "process.env.NODE_ENV": '"production"' }, target: "es2019", legalComments: "none",
 });
 const js = r.outputFiles[0].text.replace(/<\/script/gi, "<\\/script");

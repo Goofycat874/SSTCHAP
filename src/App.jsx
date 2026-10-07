@@ -272,7 +272,19 @@ function Shell() {
         {mode === "recap" && <><Recap /><div className="recap-video"><Watch id="watch-recap" compact /></div></>}
       </main>
       <footer className="foot">
-        <p className="small muted">Built from your Civics textbook, pages 196–199. Anything outside the textbook is labelled. Progress is saved in this browser.</p>
+        <div className="foot-credit">
+          <span className="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <path d="M3 19 A9 9 0 0 1 21 19" fill="none" stroke="#fff" strokeWidth="2.2" />
+              <path d="M8 19 A4 4 0 0 1 16 19" fill="none" stroke="#fff" strokeWidth="2.2" />
+            </svg>
+          </span>
+          <div>
+            <p className="cap-up">Credits</p>
+            <p className="foot-name">Made by Suryansh Swaries</p>
+          </div>
+        </div>
+        <p className="small muted foot-note">Built from the Civics textbook, pages 196–199. Anything outside the textbook is labelled. Progress is saved in this browser.</p>
       </footer>
       <Drawer open={drawer} onClose={() => setDrawer(false)} goSection={goSection} setMode={setMode} />
       <Toasts />

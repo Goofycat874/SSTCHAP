@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Play, Pause, RotateCcw, Captions, Maximize2 } from "lucide-react";
+import { Play, Pause, RotateCcw, Captions, Maximize2, Volume2, VolumeX } from "lucide-react";
+import MUSIC from "./music.mp3";
 import { hemicycle } from "./ui.jsx";
 
 // Fixed film palette: the video looks the same in light and dark themes and in the MP4 export.
@@ -372,8 +373,9 @@ const S_end = ({ t }) => {
       })}
       <g opacity={end}>
         <Seats cx={640} cy={430} R={200} n={60} rows={5} colorFor={(i) => (i % 7 === 3 ? C.red : C.green)} />
+        <T x={640} y={170} s={20} f="vm" w={600} a="middle" ls={4} c={C.mute}>MADE BY SURYANSH SWARIES</T>
         <T x={640} y={530} s={70} f="vd" w={500} a="middle">Now play the chapter.</T>
-        <rect x={500} y={615} width={280} height={60} fill={C.red} />
+        <rect x={455} y={615} width={370} height={60} fill={C.red} />
         <T x={640} y={653} s={22} f="vm" w={700} a="middle" ls={3}>START THE CHAPTER</T>
       </g>
     </g>
@@ -428,20 +430,40 @@ export function VideoPlayer({ onDone }) {
   const [t, setT] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [cc, setCc] = useState(true);
+  const [muted, setMuted] = useState(false);
   const wrap = useRef(null);
   const last = useRef(null);
   const doneRef = useRef(false);
+  const audio = useRef(null);
+
+  // One shared audio element. Browsers only allow sound after a click, so it starts from the play button.
+  useEffect(() => {
+    const a = new Audio(MUSIC);
+    a.preload = "auto";
+    audio.current = a;
+    return () => { a.pause(); a.src = ""; };
+  }, []);
+  useEffect(() => { if (audio.current) audio.current.muted = muted; }, [muted]);
 
   const tRef = useRef(0);
   tRef.current = t;
   useEffect(() => {
-    if (!playing) return;
+    const a = audio.current;
+    if (!playing) { a && a.pause(); return; }
+    if (a) {
+      try { a.currentTime = tRef.current; } catch (e) {}
+      const p = a.play();
+      if (p && p.catch) p.catch(() => {});
+    }
     let raf;
     const tick = (now) => {
       if (last.current == null) last.current = now;
       const dt = Math.min(0.1, (now - last.current) / 1000);
       last.current = now;
-      const n = Math.min(TOTAL, tRef.current + dt);
+      let n = tRef.current + dt;
+      // Follow the audio clock while it is playing so picture and music stay in sync.
+      if (a && !a.paused && a.readyState >= 2 && Math.abs(a.currentTime - n) < 0.5) n = a.currentTime;
+      n = Math.min(TOTAL, n);
       tRef.current = n;
       setT(n);
       if (n >= TOTAL) { setPlaying(false); return; }
@@ -456,10 +478,16 @@ export function VideoPlayer({ onDone }) {
   }, [t]);
 
   const toggle = useCallback(() => {
-    if (t >= TOTAL) { setT(0); setPlaying(true); return; }
+    if (t >= TOTAL) { tRef.current = 0; setT(0); setPlaying(true); return; }
     setPlaying((p) => !p);
   }, [t]);
-  const seek = (v) => setT(Math.max(0, Math.min(TOTAL, v)));
+  const seek = (v) => {
+    const n = Math.max(0, Math.min(TOTAL, v));
+    tRef.current = n;
+    setT(n);
+    const a = audio.current;
+    if (a) { try { a.currentTime = Math.min(n, (a.duration || TOTAL) - 0.05); } catch (e) {} }
+  };
   const full = () => {
     const el = wrap.current;
     try {
@@ -469,6 +497,7 @@ export function VideoPlayer({ onDone }) {
   };
   const onKey = (e) => {
     if (e.key === " " || e.key === "k") { e.preventDefault(); toggle(); }
+    else if (e.key === "m") { e.preventDefault(); setMuted((m) => !m); }
     else if (e.key === "ArrowRight") { e.preventDefault(); seek(t + 5); }
     else if (e.key === "ArrowLeft") { e.preventDefault(); seek(t - 5); }
   };
@@ -496,6 +525,7 @@ export function VideoPlayer({ onDone }) {
             {STARTS.slice(1).map((s) => <span key={s} style={{ left: (s / TOTAL) * 100 + "%" }} />)}
           </div>
         </div>
+        <button className={"vbtn" + (muted ? "" : " on")} onClick={() => setMuted((m) => !m)} aria-pressed={!muted} aria-label={muted ? "Unmute music" : "Mute music"}>{muted ? <VolumeX size={18} /> : <Volume2 size={18} />}</button>
         <button className={"vbtn" + (cc ? " on" : "")} onClick={() => setCc((c) => !c)} aria-pressed={cc} aria-label="Captions"><Captions size={18} /></button>
         <button className="vbtn" onClick={full} aria-label="Fullscreen"><Maximize2 size={17} /></button>
       </div>
